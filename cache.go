@@ -65,15 +65,17 @@ func (c *Cache) Handle(imageType bimg.ImageType, config bimg.Options) (Handler, 
 			}
 		}
 
+		// not in cache
+
 		// check if image exists
 		if !c.store.Exists(name) {
 			notFound(w)
 			return
 		}
 
-		// no cache
 		content, err := c.store.Get(name)
 		if err != nil {
+			// it should be there
 			internalError(w)
 			return
 		}
@@ -83,7 +85,7 @@ func (c *Cache) Handle(imageType bimg.ImageType, config bimg.Options) (Handler, 
 			internalError(w)
 			return
 		}
-		// put in cache
+		// put in all caches
 		go c.putInCache(cacheName, transformed, -1)
 
 		writeImage(w, transformed)

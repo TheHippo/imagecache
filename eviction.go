@@ -14,6 +14,7 @@ type EvictionStrategy interface {
 	check(c *Layer) bool
 }
 
+// compile time checks
 var _ EvictionStrategy = &LastAccessEviction{}
 var _ EvictionStrategy = &MaxCacheSizeEviction{}
 var _ EvictionStrategy = &MaxItemsEviction{}

@@ -55,8 +55,6 @@ func (nfs *NestedFileSystem) calculatePath(name string) string {
 
 	if nfs.numSubs > 0 {
 		sum := hash.Sum64()
-		// TODO: if there is a collision, nesting won't help.
-		// it only prevent filesystem issues
 		return fmt.Sprintf("%s/%s/%x", nfs.path, string(alphabet[(uint(sum)%nfs.numSubs)%uint(len(alphabet))]), hashedName)
 	}
 
