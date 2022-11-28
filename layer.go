@@ -56,6 +56,10 @@ func (l *Layer) deleteLast() {
 	defer l.lock.Unlock()
 
 	last := l.access.Back()
+	if last == nil {
+		// nothing in cache
+		return
+	}
 	if err := l.cache.Delete(last.Value.name); err != nil {
 		return
 	}
