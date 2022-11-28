@@ -131,6 +131,8 @@ func (l *Layer) Get(name string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	// this is necessary because there might be items in the
+	// cache that the cache isn't aware of. (filesystem after restart)
 	go l.accessed(name, int64(len(content)))
 	return content, nil
 }
