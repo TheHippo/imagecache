@@ -34,6 +34,13 @@ func (c *Cache) Clear(name string) {
 	}
 }
 
+func (c *Cache) EvictAll() (count int) {
+	for _, l := range c.layers {
+		count += l.Evict()
+	}
+	return
+}
+
 type Handler func(string, http.ResponseWriter)
 
 func (c *Cache) Handle(imageType bimg.ImageType, config bimg.Options) (Handler, error) {

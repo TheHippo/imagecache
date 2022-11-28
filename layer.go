@@ -46,7 +46,7 @@ func (l *Layer) BackgroundEviction(ctx context.Context, dur time.Duration) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			l.evict()
+			l.Evict()
 		}
 	}
 }
@@ -69,16 +69,18 @@ func (l *Layer) deleteLast() {
 	l.access.Remove(last)
 }
 
-func (l *Layer) evict() {
+func (l *Layer) Evict() (count int) {
 	for _, e := range l.evictions {
 		for {
 			if e.check(l) {
+				count++
 				l.deleteLast()
 			} else {
 				break
 			}
 		}
 	}
+	return
 }
 
 func (l *Layer) Delete(name string) error {
@@ -149,7 +151,7 @@ func (l *Layer) Put(name string, content []byte) error {
 		}
 		l.lock.RUnlock()
 		l.accessed(name, size)
-		l.evict()
+		l.Evict()
 	}(name, int64(len(content)))
 
 	return nil
