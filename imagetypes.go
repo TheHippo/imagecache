@@ -36,6 +36,8 @@ var contentTypes = map[bimg.ImageType]string{
 var supportedTypes []bimg.ImageType
 var getOnce sync.Once
 
+// GetSupportedTypes get a slice of all supported image formats. The results
+// are reported by [bimg.ImageType]
 func GetSupportedTypes() []bimg.ImageType {
 	getOnce.Do(func() {
 		supportedTypes = make([]bimg.ImageType, 0, len(allTypes))
@@ -48,6 +50,8 @@ func GetSupportedTypes() []bimg.ImageType {
 	return supportedTypes
 }
 
+// SupportsType check if image format [bimg.ImageType] is supported by the current
+// installation of libvips
 func SupportsType(t bimg.ImageType) bool {
 	return slices.Contains(GetSupportedTypes(), t)
 }

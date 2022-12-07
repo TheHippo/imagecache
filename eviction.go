@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+// Prefixes that help to calculate cache sizes.
+//
+//	// 1GB
+//	const MaxSize = 1 * imageCache.GB
 const (
 	KB = 1024
 	MB = KB * 1024
@@ -19,10 +23,13 @@ var _ EvictionStrategy = &LastAccessEviction{}
 var _ EvictionStrategy = &MaxCacheSizeEviction{}
 var _ EvictionStrategy = &MaxItemsEviction{}
 
+// LastAccessEviction evicts items after a certain time not being accessed
 type LastAccessEviction struct {
 	dur time.Duration
 }
 
+// NewLastAccessEviction creates a new EvictionStrategy based on the time of
+// the last access
 func NewLastAccessEviction(duration time.Duration) *LastAccessEviction {
 	return &LastAccessEviction{
 		dur: duration,
@@ -40,10 +47,14 @@ func (lae *LastAccessEviction) check(c *Layer) bool {
 	return false
 }
 
+// MaxCacheSizeEviction evict items when a certain size is reached. Items
+// are evicted in the order of their last access.
 type MaxCacheSizeEviction struct {
 	maxSize int64
 }
 
+// NewMaxCacheSizeEviction creates a new EvictionStrategy which evicts items
+// by their last access when a certain size is reached.
 func NewMaxCacheSizeEviction(size int64) *MaxCacheSizeEviction {
 	return &MaxCacheSizeEviction{
 		maxSize: size,
@@ -55,10 +66,15 @@ func (mse *MaxCacheSizeEviction) check(c *Layer) bool {
 	return size > mse.maxSize
 }
 
+// MaxItemsEviction evict items when a certain number of items is reached.
+// Items are evicted in the order of their last access.
 type MaxItemsEviction struct {
 	n int
 }
 
+// NewMaxItemsEviction create a new EvictionStrategy which evicts items
+// when a certain number of items are in the layer. Items are evicted in the
+// order by their last access.
 func NewMaxItemsEviction(number int) *MaxItemsEviction {
 	return &MaxItemsEviction{
 		n: number,

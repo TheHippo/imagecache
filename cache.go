@@ -7,11 +7,14 @@ import (
 	"github.com/h2non/bimg"
 )
 
+// Cache caches items
 type Cache struct {
 	store  Storer
 	layers []*Layer
 }
 
+// Creates a new Cache. Items are taken frrom the [Store]. Items are removed
+// from the cache when certain criteria from each [Layer] are hit.
 func New(store Storer, layers ...*Layer) *Cache {
 	return &Cache{
 		store:  store,
@@ -28,6 +31,8 @@ func (c *Cache) putInCache(name string, content []byte, above int) {
 	}
 }
 
+// Clear a single item from the cache. There is no feedback on how successful the
+// operation was and which layer produced an error.
 func (c *Cache) Clear(name string) {
 	for _, l := range c.layers {
 		l.Delete(name) //nolint:errcheck
