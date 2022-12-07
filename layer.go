@@ -5,6 +5,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/TheHippo/imagecache/list"
 )
 
 // Layer represents a caching layer
@@ -13,8 +15,8 @@ type Layer struct {
 	evictions []EvictionStrategy
 	size      atomic.Int64
 	count     atomic.Int32
-	access    *List[*Item]
-	inventory map[string]*Element[*Item]
+	access    *list.List[*Item]
+	inventory map[string]*list.Element[*Item]
 	lock      sync.RWMutex
 }
 
@@ -44,8 +46,8 @@ func NewLayer(cache Cacher, evictions ...EvictionStrategy) *Layer {
 	return &Layer{
 		cache:     cache,
 		evictions: evictions,
-		access:    NewList[*Item](),
-		inventory: make(map[string]*Element[*Item], 0),
+		access:    list.NewList[*Item](),
+		inventory: make(map[string]*list.Element[*Item], 0),
 	}
 }
 
