@@ -28,8 +28,8 @@ type Item struct {
 
 // LayerStats contains information about the cache items
 // in the layer
-// * Count of items
-// * Size of items in bytes
+//   - Count of items
+//   - Size of items in bytes
 type LayerStats struct {
 	Count int32
 	Size  int64
