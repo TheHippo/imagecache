@@ -13,7 +13,7 @@ type Cache struct {
 	layers []*Layer
 }
 
-// Creates a new Cache. Items are taken frrom the [Store]. Items are removed
+// Creates a new Cache. Items are taken from the [Storer]. Items are removed
 // from the cache when certain criteria from each [Layer] are hit.
 func New(store Storer, layers ...*Layer) *Cache {
 	return &Cache{
