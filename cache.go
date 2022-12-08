@@ -39,6 +39,8 @@ func (c *Cache) Clear(name string) {
 	}
 }
 
+// EvictAll instructs all layers to check with all Evictionstrategies if files should be
+// evicted. Returns the number of evicted items.
 func (c *Cache) EvictAll() (count int) {
 	for _, l := range c.layers {
 		count += l.Evict()

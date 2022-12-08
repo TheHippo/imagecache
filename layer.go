@@ -84,6 +84,8 @@ func (l *Layer) deleteLast() {
 	l.access.Remove(last)
 }
 
+// Evict instructs all Evictionstrategies to remove items that need to be evicted.
+// Returns the number of items that were evicted.
 func (l *Layer) Evict() (count int) {
 	for _, e := range l.evictions {
 		for {
