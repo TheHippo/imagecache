@@ -10,7 +10,8 @@ type Memory struct {
 	lock sync.RWMutex
 }
 
-var NotInMemory = errors.New("does not exist in memory cache")
+// ErrNotInMemory is returned if an item does not exists in [Memory]
+var ErrNotInMemory = errors.New("does not exist in memory cache")
 
 // compile-time check
 var _ Storer = &Memory{}
@@ -36,7 +37,7 @@ func (m *Memory) Get(name string) ([]byte, error) {
 	if exists {
 		return content, nil
 	}
-	return nil, NotInMemory
+	return nil, ErrNotInMemory
 }
 
 func (m *Memory) Exists(name string) bool {
