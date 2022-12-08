@@ -15,14 +15,13 @@ type Layer struct {
 	evictions []EvictionStrategy
 	size      atomic.Int64
 	count     atomic.Int32
-	access    *list.List[*Item]
-	inventory map[string]*list.Element[*Item]
+	access    *list.List[*item]
+	inventory map[string]*list.Element[*item]
 	lock      sync.RWMutex
 }
 
-// Item within the caching layer
-// TODO: this does not need to be exported
-type Item struct {
+// item within the caching layer
+type item struct {
 	name       string
 	lastAccess time.Time
 	size       int64
@@ -46,8 +45,8 @@ func NewLayer(cache Cacher, evictions ...EvictionStrategy) *Layer {
 	return &Layer{
 		cache:     cache,
 		evictions: evictions,
-		access:    list.NewList[*Item](),
-		inventory: make(map[string]*list.Element[*Item], 0),
+		access:    list.NewList[*item](),
+		inventory: make(map[string]*list.Element[*item], 0),
 	}
 }
 
@@ -131,7 +130,7 @@ func (l *Layer) accessed(name string, size int64) {
 	l.lock.Lock()
 	e, ok := l.inventory[name]
 	if !ok {
-		i := &Item{
+		i := &item{
 			name:       name,
 			lastAccess: time.Now(),
 			size:       size,
