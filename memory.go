@@ -5,6 +5,7 @@ import (
 	"sync"
 )
 
+// Memory can be used as a [Storer] or [Cacher].
 type Memory struct {
 	data map[string][]byte
 	lock sync.RWMutex
@@ -17,12 +18,14 @@ var ErrNotInMemory = errors.New("does not exist in memory cache")
 var _ Storer = &Memory{}
 var _ Cacher = &Memory{}
 
+// NewMemory creates a new in-memory [Storer] or [Cacher]
 func NewMemory() *Memory {
 	return &Memory{
 		data: make(map[string][]byte),
 	}
 }
 
+// Put an item into Memory. It can't return an error.
 func (m *Memory) Put(name string, content []byte) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
@@ -30,6 +33,8 @@ func (m *Memory) Put(name string, content []byte) error {
 	return nil
 }
 
+// Get an item from Memory. If the item does not exists it return
+// [ErrNotInMemory] as the error.
 func (m *Memory) Get(name string) ([]byte, error) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
@@ -40,6 +45,7 @@ func (m *Memory) Get(name string) ([]byte, error) {
 	return nil, ErrNotInMemory
 }
 
+// Checks if an item exists
 func (m *Memory) Exists(name string) bool {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
@@ -47,6 +53,8 @@ func (m *Memory) Exists(name string) bool {
 	return exists
 }
 
+// Delete an item from Memory. It does not return an error ever,
+// if the item does not exist nothing else happens.
 func (m *Memory) Delete(name string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
