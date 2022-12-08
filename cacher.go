@@ -1,5 +1,6 @@
 package imagecache
 
+// Cacher is the interface [Cache] expects to cache transformed images to.
 type Cacher interface {
 	Put(name string, content []byte) error
 	Exists(name string) bool
