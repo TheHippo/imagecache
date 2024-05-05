@@ -1,10 +1,10 @@
 package imagecache
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/h2non/bimg"
-	"golang.org/x/exp/slices"
 )
 
 var allTypes = []bimg.ImageType{
