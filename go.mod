@@ -1,5 +1,5 @@
 module github.com/TheHippo/imagecache
 
-go 1.19
+go 1.22
 
 require github.com/h2non/bimg v1.1.9
