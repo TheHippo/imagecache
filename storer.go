@@ -1,7 +1,9 @@
 package imagecache
 
+import "context"
+
 // Storer is the interface [Cache] expects to retrieve items from
 type Storer interface {
-	Exists(name string) bool
-	Get(name string) ([]byte, error)
+	Exists(ctx context.Context, name string) bool
+	Get(ctx context.Context, name string) ([]byte, error)
 }

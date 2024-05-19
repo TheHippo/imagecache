@@ -1,6 +1,7 @@
 package imagecache
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -22,33 +23,33 @@ func New(store Storer, layers ...*Layer) *Cache {
 	}
 }
 
-func (c *Cache) putInCache(name string, content []byte, above int) {
+func (c *Cache) putInCache(ctx context.Context, name string, content []byte, above int) {
 	if above <= 0 {
 		above = len(c.layers)
 	}
 	for i := 0; i < above; i++ {
-		c.layers[i].Put(name, content) //nolint:errcheck
+		c.layers[i].Put(ctx, name, content) //nolint:errcheck
 	}
 }
 
 // Clear a single item from the cache. There is no feedback on how successful the
 // operation was and which layer produced an error.
-func (c *Cache) Clear(name string) {
+func (c *Cache) Clear(ctx context.Context, name string) {
 	for _, l := range c.layers {
-		l.Delete(name) //nolint:errcheck
+		l.Delete(ctx, name) //nolint:errcheck
 	}
 }
 
 // EvictAll instructs all layers to check with all Evictionstrategies if files should be
 // evicted. Returns the number of evicted items.
-func (c *Cache) EvictAll() (count int) {
+func (c *Cache) EvictAll(ctx context.Context) (count int) {
 	for _, l := range c.layers {
-		count += l.Evict()
+		count += l.Evict(ctx)
 	}
 	return
 }
 
-type Handler func(string, http.ResponseWriter)
+type Handler func(string, context.Context, http.ResponseWriter)
 
 func (c *Cache) Handle(imageType bimg.ImageType, config bimg.Options) (Handler, error) {
 	contentType, ctOk := contentTypes[imageType]
@@ -58,20 +59,20 @@ func (c *Cache) Handle(imageType bimg.ImageType, config bimg.Options) (Handler, 
 
 	cacheKey := fmt.Sprintf("%s-%s", bimg.ImageTypeName(imageType), cacheKey(config))
 
-	return func(name string, w http.ResponseWriter) {
+	return func(name string, ctx context.Context, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", contentType)
 
 		// check if it is in one of the caches
 		cacheName := fmt.Sprintf("%s-%s", cacheKey, name)
 		for i, l := range c.layers {
-			if !l.Exists(cacheName) {
+			if !l.Exists(ctx, cacheName) {
 				continue
 			}
 
-			content, err := l.Get(cacheName)
+			content, err := l.Get(ctx, cacheName)
 			if i > 0 && err == nil {
 				// does not exist in higher up caches
-				go c.putInCache(cacheName, content, i)
+				go c.putInCache(ctx, cacheName, content, i)
 			}
 			if err == nil {
 				writeImage(w, content)
@@ -82,12 +83,12 @@ func (c *Cache) Handle(imageType bimg.ImageType, config bimg.Options) (Handler, 
 		// not in cache
 
 		// check if image exists
-		if !c.store.Exists(name) {
+		if !c.store.Exists(ctx, name) {
 			notFound(w)
 			return
 		}
 
-		content, err := c.store.Get(name)
+		content, err := c.store.Get(ctx, name)
 		if err != nil {
 			// it should be there
 			internalError(w)
@@ -100,7 +101,7 @@ func (c *Cache) Handle(imageType bimg.ImageType, config bimg.Options) (Handler, 
 			return
 		}
 		// put in all caches
-		go c.putInCache(cacheName, transformed, -1)
+		go c.putInCache(ctx, cacheName, transformed, -1)
 
 		writeImage(w, transformed)
 	}, nil

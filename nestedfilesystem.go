@@ -1,6 +1,7 @@
 package imagecache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"hash/fnv"
@@ -61,7 +62,7 @@ func (nfs *NestedFileSystem) calculatePath(name string) string {
 	return fmt.Sprintf("%s/%x", nfs.path, hashedName)
 }
 
-func (nfs *NestedFileSystem) Put(name string, content []byte) error {
+func (nfs *NestedFileSystem) Put(_ context.Context, name string, content []byte) error {
 	fn := nfs.calculatePath(name)
 	f, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, filePermission)
 	if err != nil {
@@ -80,7 +81,7 @@ func (nfs *NestedFileSystem) Put(name string, content []byte) error {
 	return nil
 }
 
-func (nfs *NestedFileSystem) Get(name string) ([]byte, error) {
+func (nfs *NestedFileSystem) Get(_ context.Context, name string) ([]byte, error) {
 	fn := nfs.calculatePath(name)
 	f, err := os.OpenFile(fn, os.O_RDONLY, filePermission)
 	if err != nil {
@@ -95,11 +96,11 @@ func (nfs *NestedFileSystem) exists(path string) bool {
 	return err == nil
 }
 
-func (nfs *NestedFileSystem) Exists(name string) bool {
+func (nfs *NestedFileSystem) Exists(_ context.Context, name string) bool {
 	return nfs.exists(nfs.calculatePath(name))
 }
 
-func (nfs *NestedFileSystem) Delete(name string) error {
+func (nfs *NestedFileSystem) Delete(_ context.Context, name string) error {
 	return os.Remove(nfs.calculatePath(name))
 }
 

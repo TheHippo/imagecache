@@ -60,12 +60,12 @@ func (l *Layer) BackgroundEviction(ctx context.Context, dur time.Duration) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			l.Evict()
+			l.Evict(ctx)
 		}
 	}
 }
 
-func (l *Layer) deleteLast() {
+func (l *Layer) deleteLast(ctx context.Context) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
@@ -74,7 +74,7 @@ func (l *Layer) deleteLast() {
 		// nothing in cache
 		return
 	}
-	if err := l.cache.Delete(last.Value.name); err != nil {
+	if err := l.cache.Delete(ctx, last.Value.name); err != nil {
 		return
 	}
 	l.count.Add(-1)
@@ -85,12 +85,12 @@ func (l *Layer) deleteLast() {
 
 // Evict instructs all Evictionstrategies to remove items that need to be evicted.
 // Returns the number of items that were evicted.
-func (l *Layer) Evict() (count int) {
+func (l *Layer) Evict(ctx context.Context) (count int) {
 	for _, e := range l.evictions {
 		for {
 			if e.check(l) {
 				count++
-				l.deleteLast()
+				l.deleteLast(ctx)
 			} else {
 				break
 			}
@@ -101,8 +101,8 @@ func (l *Layer) Evict() (count int) {
 
 // Delete an items from the underlying cache. The exact error
 // depends on the underlying cache implementation.
-func (l *Layer) Delete(name string) error {
-	if err := l.cache.Delete(name); err != nil {
+func (l *Layer) Delete(ctx context.Context, name string) error {
+	if err := l.cache.Delete(ctx, name); err != nil {
 		return err
 	}
 
@@ -122,8 +122,8 @@ func (l *Layer) Delete(name string) error {
 
 // Exists checks if an items exists in the underlying cache.
 // Does not count as an access.
-func (l *Layer) Exists(name string) bool {
-	return l.cache.Exists(name)
+func (l *Layer) Exists(ctx context.Context, name string) bool {
+	return l.cache.Exists(ctx, name)
 }
 
 func (l *Layer) accessed(name string, size int64) {
@@ -150,8 +150,8 @@ func (l *Layer) accessed(name string, size int64) {
 // or an error if something went wrong. The behavior of
 // the error depends on the underlying cache. This also
 // counts as an access to the item.
-func (l *Layer) Get(name string) ([]byte, error) {
-	content, err := l.cache.Get(name)
+func (l *Layer) Get(ctx context.Context, name string) ([]byte, error) {
+	content, err := l.cache.Get(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +165,8 @@ func (l *Layer) Get(name string) ([]byte, error) {
 // Returns an error if something went wrong. The exact error depends
 // on the underlying cache. If the item already exists the item is
 // overwritten. This also counts as an access to the item.
-func (l *Layer) Put(name string, content []byte) error {
-	if err := l.cache.Put(name, content); err != nil {
+func (l *Layer) Put(ctx context.Context, name string, content []byte) error {
+	if err := l.cache.Put(ctx, name, content); err != nil {
 		return err
 	}
 
@@ -181,7 +181,7 @@ func (l *Layer) Put(name string, content []byte) error {
 		}
 		l.lock.RUnlock()
 		l.accessed(name, size)
-		l.Evict()
+		l.Evict(ctx)
 	}(name, int64(len(content)))
 
 	return nil

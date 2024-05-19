@@ -1,6 +1,7 @@
 package imagecache
 
 import (
+	"context"
 	"errors"
 	"sync"
 )
@@ -26,7 +27,7 @@ func NewMemory() *Memory {
 }
 
 // Put an item into Memory. It can't return an error.
-func (m *Memory) Put(name string, content []byte) error {
+func (m *Memory) Put(_ context.Context, name string, content []byte) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	m.data[name] = content
@@ -35,7 +36,7 @@ func (m *Memory) Put(name string, content []byte) error {
 
 // Get an item from Memory. If the item does not exists it return
 // [ErrNotInMemory] as the error.
-func (m *Memory) Get(name string) ([]byte, error) {
+func (m *Memory) Get(_ context.Context, name string) ([]byte, error) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 	content, exists := m.data[name]
@@ -46,7 +47,7 @@ func (m *Memory) Get(name string) ([]byte, error) {
 }
 
 // Checks if an item exists
-func (m *Memory) Exists(name string) bool {
+func (m *Memory) Exists(_ context.Context, name string) bool {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
 	_, exists := m.data[name]
@@ -55,7 +56,7 @@ func (m *Memory) Exists(name string) bool {
 
 // Delete an item from Memory. It does not return an error ever,
 // if the item does not exist nothing else happens.
-func (m *Memory) Delete(name string) error {
+func (m *Memory) Delete(_ context.Context, name string) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	delete(m.data, name)
